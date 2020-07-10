@@ -1,4 +1,7 @@
 
+
+import time
+import pygame 
 import numpy
 
 
@@ -16,10 +19,10 @@ program=["",
          "self.dir=[-1,0]",
          "self.dir=[0,-1]",
          "self.dir=[0,0]",
-         "self.dir=[0,0] \nself.pos[2]+=1",
          "self.dir=[0,0] \nself.pos[1]+=1",
-         "self.dir=[0,0] \nself.pos[2]-=1",
+         "self.dir=[0,0] \nself.pos[2]+=1",
          "self.dir=[0,0] \nself.pos[1]-=1",
+         "self.dir=[0,0] \nself.pos[2]-=1",
          "dir=pos_if(self.variables, self.pos) \nif dir!= False and any(dir):\n self.pos[1]+=2*dir[0] \n self.pos[2]+=2*dir[1] ",
          "self.variables=int(matrixdatabase[self.returnpos()])",
          # Tile twelve takes all the variables from it's linked partners,
@@ -114,7 +117,47 @@ class actor(object):
         # the actor slides if there is no code against it. 
         self.pos[1]+=self.dir[0]
         self.pos[2]+=self.dir[1]
+
+def color_palette(col):
+    square=pygame.Color(0,0,0)
+    square.hsva=(6*len(program)*int(col/len(program)),bool(col)*100,50+1.5*(col%len(program)),100)
+    return square
+
+
+
+def draw():
+
+    pygame.draw.rect(window,(80,120,80),(0,0,canvaswidth,canvasheight))
+
+    sq=int((canvaswidth+canvasheight)/(6*matrixshape[2]))
+    for z in range(layercount):
+        for x in range(matrixshape[1]):
+            for y in range(matrixshape[2]):
+                
+                pygame.draw.rect(window,color_palette(matrixdatabase[z,x,y]),(x*sq+sq,(canvasheight-y*sq-2*sq)-z*sq*matrixshape[2]-z*sq,sq,sq))
+    radius=int(sq/2)
+    for i in range(len(actorlist)):
         
+        actorpos1=actorlist[i].pos[1]*sq+sq+radius
+        actorpos2=(canvasheight-actorlist[i].pos[2]*sq-2*sq)-actorlist[i].pos[0]*sq*matrixshape[2]+radius -actorlist[i].pos[0]*sq
+        pygame.draw.circle(window,(20,20,20),(actorpos1,actorpos2),radius)
+        if isinstance(actorlist[i].variables,int):
+            pygame.draw.circle(window,(color_palette(actorlist[i].variables)),(actorpos1,actorpos2),int(radius/2))
+        elif len(actorlist[i].variables)>0:
+            pygame.draw.circle(window,(color_palette(actorlist[i].variables[0])),(actorpos1,actorpos2),int(radius/2))
+
+
+        
+    pygame.display.update()
+    pygame.event.pump()
+    
+canvaswidth = 400
+canvasheight = 300
+pygame.display.init()
+window= pygame.display.set_mode((canvaswidth, canvasheight) )
+
+
+
 
 # This makes a fun path.
 # tile zero does nothing,
@@ -168,15 +211,15 @@ c.variables=12
 
 actorlist=[a,b,c]
 
-for i in range(8):
+
+
+for i in range(1000):
+    draw()
+    time.sleep(0.3)
     print("iter "+str(i)+":")
     for i in range(len(actorlist)):
         actorlist[i].run()
         print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
         print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
         print("-=-")
-    print()
-
-
-
 
