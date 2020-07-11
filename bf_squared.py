@@ -1,13 +1,43 @@
 
 
 import time
-import pygame 
+import pygame
+from pygame import freetype
 import numpy
 
 
 matrixshape=(1,8,8) #z,x,y
 matrixdatabase=numpy.zeros(matrixshape,dtype=int)
 layercount=2 #z amount (use this if you want 3d)
+
+# stuff for controlling input.
+
+cursorpos=[0,0,0]
+cursortile=0
+# gives names to the tiles you select. 
+tilenames=["erase",
+           "slide right",
+           "slide up",
+           "slide left",
+           "slide down",
+           "stop sliding",
+           "shift right",
+           "shift up",
+           "shift left",
+           "shift down",
+           "if any equal",
+           "get tile",
+           "aggregate data",
+           "add one",
+           "subtract one",
+           "add by variable",
+           "subtract by variable",
+           "toggle activity",
+           "link actor",
+           "remove link",
+           "make actor"
+           ]
+
 
 # program contains all the info about what specific tiles instruct the actor
 # what to do.
@@ -30,10 +60,10 @@ program=["",
          # variables list. 
          "self.variables=[] \nfor i in range(len(self.linked)): \n   self.variables=numpy.append(self.variables,actorlist[self.linked[i]].variables)",
          #these next few edit the layer. 
-         "matrixdatabase[self.pos]+=1",
-         "matrixdatabase[self.pos]-=1",
-         "matrixdatabase[self.pos]+=self.variables[0]",
-         "matrixdatabase[self.pos]-=self.variables[0]",
+         "matrixdatabase[self.returnpos()]+=1",
+         "matrixdatabase[self.returnpos()]-=1",
+         "matrixdatabase[self.returnpos()]+=self.variables[0]",
+         "matrixdatabase[self.returnpos()]-=self.variables[0]",
          #makes the actor active/inactive
          "self.active = not self.active",
          #adds an actor with the index variable[0]
@@ -45,7 +75,7 @@ program=["",
 
          ] 
 
-for i in range(layercount): #this part appends arrays of matrixshape 
+for i in range(layercount-1): #this part appends arrays of matrixshape 
     matrixdatabase=numpy.append(matrixdatabase,numpy.zeros(matrixshape, dtype=int),axis=0)
 
 def pos_if(variable1, pos1): 
@@ -58,7 +88,7 @@ def pos_if(variable1, pos1):
             if abs(actorlist[i].pos[1]-pos1[1])+abs(actorlist[i].pos[2]-pos1[2])<=1:
 
                 if actorlist[i].variables==variable1:
-
+                    print([pos1[2]-actorlist[i].pos[2],pos1[1]-actorlist[i].pos[1]])
                     return [pos1[2]-actorlist[i].pos[2],pos1[1]-actorlist[i].pos[1]]
 
     return False
@@ -109,7 +139,9 @@ class actor(object):
 ##                print()
                             
         else:
-            #print(program[self.orders])
+##            print(program[self.orders])
+##            print(self.pos)
+##            print(matrixdatabase[self.pos[0],self.pos[1],self.pos[2],])
             exec(program[self.orders])
 ##            print(program[self.orders])
 ##            print()
@@ -117,6 +149,7 @@ class actor(object):
         # the actor slides if there is no code against it. 
         self.pos[1]+=self.dir[0]
         self.pos[2]+=self.dir[1]
+
 
 def color_palette(col):
     square=pygame.Color(0,0,0)
@@ -129,7 +162,7 @@ def draw():
 
     pygame.draw.rect(window,(80,120,80),(0,0,canvaswidth,canvasheight))
 
-    sq=int((canvaswidth+canvasheight)/(6*matrixshape[2]))
+    sq=int(canvasheight/((matrixshape[2])*layercount+2))
     for z in range(layercount):
         for x in range(matrixshape[1]):
             for y in range(matrixshape[2]):
@@ -146,8 +179,15 @@ def draw():
         elif len(actorlist[i].variables)>0:
             pygame.draw.circle(window,(color_palette(actorlist[i].variables[0])),(actorpos1,actorpos2),int(radius/2))
 
+    cursorscreenpos=[0,0]
+    cursorscreenpos[0]=cursorpos[1]*sq+sq
+    cursorscreenpos[1]=(canvasheight-cursorpos[2]*sq-2*sq)-cursorpos[0]*sq*matrixshape[2] -cursorpos[0]*sq
+    pygame.draw.rect(window,(255,255,254),(cursorscreenpos[0],cursorscreenpos[1],sq,sq),1)
 
-        
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)),str(int(cursortile/len(program)))+"x "+tilenames[cursortile%len(program)],fgcolor=(255,255,255))
+
+
+    
     pygame.display.update()
     pygame.event.pump()
     
@@ -174,7 +214,24 @@ matrixdatabase[0,3,0]=32
 matrixdatabase[1,2,0]=12
 matrixdatabase[0,4,0]=12
 matrixdatabase[0,5,0]=10
-matrixdatabase[0,7,2]=27
+#setting up a loop:
+matrixdatabase[0,6,2]=27
+matrixdatabase[0,7,2]=2
+matrixdatabase[0,7,3]=3
+matrixdatabase[0,2,3]=2
+matrixdatabase[0,2,7]=3
+matrixdatabase[0,0,7]=4
+matrixdatabase[0,0,3]=1
+matrixdatabase[0,2,4]=34
+matrixdatabase[0,2,5]=32
+matrixdatabase[0,2,6]=12
+# NOTE: there is currently a bug where the IF tile is making the actor move
+# weirdly. I don't really know what's causing it.
+# otherwise, the program should stick actor 0 into a loop, and it should
+# iterate 32 times. 
+matrixdatabase[0,1,3]=10
+matrixdatabase[0,1,1]=5
+
 # So this program is set up to use 3 actors.
 # the main actor starts at [0,0,0], it's linked counterpart starts at [1,0,0]
 # the last actor is at [0,5,1] to act as an argument later.
@@ -208,18 +265,90 @@ b=actor([1,0,0],[0,0],False)
 
 c=actor([0,5,1],[0,0],False)
 c.variables=12
+d=actor([0,1,2],[0,0],False)
+d.variables=32
+actorlist=[a,b,c,d]
 
-actorlist=[a,b,c]
+pygame.freetype.init()
+default=pygame.freetype.SysFont("Segoe UI",20)
 
 
 
-for i in range(1000):
+up_pressed=0
+right_pressed=0
+down_pressed=0
+left_pressed=0
+space_pressed=0
+e_pressed=0
+q_pressed=0
+w_pressed=0
+playing=False
+
+while True:
+    ## Input handling
+    pygame.event.pump()
+    key=pygame.key.get_pressed()
+    
+    if key[pygame.K_RIGHT] and right_pressed<=0:
+        if cursorpos[1]+1<matrixshape[1]:
+            cursorpos[1]+=1
+        right_pressed=1
+        
+    if key[pygame.K_UP] and up_pressed<=0:
+        if cursorpos[0]!=layercount-1 or cursorpos[2]!=matrixshape[2]-1:
+            if cursorpos[0]+1<layercount and cursorpos[2]==matrixshape[2]-1:
+                cursorpos[0]+=1
+                cursorpos[2]=0
+            else:
+                cursorpos[2]+=1
+        up_pressed=1
+        
+    if key[pygame.K_LEFT] and left_pressed<=0:
+        if cursorpos[1]-1>=0:
+            cursorpos[1]-=1
+        left_pressed=1
+            
+    if key[pygame.K_DOWN] and down_pressed<=0:
+        if cursorpos[0]!=0 or cursorpos[2]!=0:
+            if cursorpos[0]-1>=0 and cursorpos[2]==0:
+                cursorpos[0]-=1
+                cursorpos[2]=matrixshape[2]
+            else:
+                cursorpos[2]-=1
+        down_pressed=0
+
+    if key[pygame.K_SPACE] and space_pressed<=0:
+        playing= not playing
+        space_pressed=1
+
+    if key[pygame.K_q] and q_pressed<=0:
+        cursortile-=1
+        q_pressed=1
+        
+    if key[pygame.K_e] and e_pressed<=0:
+        cursortile+=1
+        e_pressed=1
+    if key[pygame.K_w] and w_pressed<=0:
+        matrixdatabase[cursorpos[0],cursorpos[1],cursorpos[2]]=cursortile
+        w_pressed=1
+        
+    space_pressed-=0.3
+    right_pressed-=0.3
+    up_pressed-=0.3
+    left_pressed-=0.3
+    down_pressed-=0.3
+    e_pressed-=0.3
+    q_pressed-=0.3
+    w_pressed-=0.3
+    #done with input handling
+
+    
     draw()
-    time.sleep(0.3)
-    print("iter "+str(i)+":")
-    for i in range(len(actorlist)):
-        actorlist[i].run()
-        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
-        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
-        print("-=-")
-
+    time.sleep(0.03)
+##    print("iter "+str(i)+":")
+    if playing:
+        for i in range(len(actorlist)):
+            actorlist[i].run()
+    ##        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
+    ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
+    ##        print("-=-")
