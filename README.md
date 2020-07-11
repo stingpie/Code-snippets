@@ -2,6 +2,15 @@
 A collection of code that I made
 
 # bf-squared
+
+Controls: 
+Q&E switch tile
+W: set tile
+Space: pause/Unpause
+arrow keys: control cursor.
+
+
+
 The whole idea behind this is to make an esoteric language. Inspried by BF https://en.wikipedia.org/wiki/Esoteric_programming_language#Brainfuck and piet https://en.wikipedia.org/wiki/Esoteric_programming_language#Piet , BF² is like bf, with a few upgrades. BF² is sort of 2.5D. In bf², there are multiple layers which different actors reside in. On each layer, there are different tiles which actors can use as a program. 
 
 ACTORS:
