@@ -6,7 +6,7 @@ from pygame import freetype
 import numpy
 
 
-matrixshape=(1,8,8) #z,x,y
+matrixshape=(1,10,10) #z,x,y
 matrixdatabase=numpy.zeros(matrixshape,dtype=int)
 layercount=2 #z amount (use this if you want 3d)
 
@@ -37,6 +37,29 @@ tilenames=["erase",
            "remove link",
            "make actor"
            ]
+
+tilesymbol=["",
+            "→",
+            "↑",
+            "←",
+            "↓",
+            "X",
+            "˃",
+            "˄",
+            "˂",
+            "˅",
+            "≈",
+            "Ꙭ",
+            "ↈ",
+            "+",
+            "-",
+            "∑",
+            "σ",
+            "℮",
+            "ꚙ",
+            "ꙍ",
+            "Ꙫ"
+            ]
 
 
 # program contains all the info about what specific tiles instruct the actor
@@ -84,12 +107,12 @@ def pos_if(variable1, pos1):
 
     for i in range(len(actorlist)):
         if actorlist[i].pos != pos1:
+            if actorlist[i].pos[0]==pos1[0]:
+                if abs(actorlist[i].pos[1]-pos1[1])+abs(actorlist[i].pos[2]-pos1[2])<=1:
 
-            if abs(actorlist[i].pos[1]-pos1[1])+abs(actorlist[i].pos[2]-pos1[2])<=1:
+                    if actorlist[i].variables==variable1:
 
-                if actorlist[i].variables==variable1:
-                    print([pos1[2]-actorlist[i].pos[2],pos1[1]-actorlist[i].pos[1]])
-                    return [pos1[2]-actorlist[i].pos[2],pos1[1]-actorlist[i].pos[1]]
+                        return [actorlist[i].pos[1]-pos1[1] , actorlist[i].pos[2]-pos1[2]]
 
     return False
 
@@ -153,7 +176,7 @@ class actor(object):
 
 def color_palette(col):
     square=pygame.Color(0,0,0)
-    square.hsva=(6*len(program)*int(col/len(program)),bool(col)*100,50+1.5*(col%len(program)),100)
+    square.hsva=(2*len(program)*int(col/len(program)),bool(col)*100,50+1.5*(col%len(program)),100)
     return square
 
 
@@ -166,8 +189,14 @@ def draw():
     for z in range(layercount):
         for x in range(matrixshape[1]):
             for y in range(matrixshape[2]):
+                squarepos=(x*sq+sq,(canvasheight-y*sq-2*sq)-z*sq*matrixshape[2]-z*sq)
+                pygame.draw.rect(window,color_palette(matrixdatabase[z,x,y]),(squarepos[0],squarepos[1],sq,sq))
+                if viewmode=="text":
+                    default.render_to(window,(squarepos),tilesymbol[matrixdatabase[z,x,y]%len(program)])
+
                 
-                pygame.draw.rect(window,color_palette(matrixdatabase[z,x,y]),(x*sq+sq,(canvasheight-y*sq-2*sq)-z*sq*matrixshape[2]-z*sq,sq,sq))
+
+                    
     radius=int(sq/2)
     for i in range(len(actorlist)):
         
@@ -187,12 +216,15 @@ def draw():
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)),str(int(cursortile/len(program)))+"x "+tilenames[cursortile%len(program)],fgcolor=(255,255,255))
 
 
+
+    
+
     
     pygame.display.update()
     pygame.event.pump()
     
-canvaswidth = 400
-canvasheight = 300
+canvaswidth = 800
+canvasheight = 600
 pygame.display.init()
 window= pygame.display.set_mode((canvaswidth, canvasheight) )
 
@@ -230,7 +262,11 @@ matrixdatabase[0,2,6]=12
 # otherwise, the program should stick actor 0 into a loop, and it should
 # iterate 32 times. 
 matrixdatabase[0,1,3]=10
-matrixdatabase[0,1,1]=5
+matrixdatabase[0,3,1]=2
+matrixdatabase[0,3,6]=1
+matrixdatabase[0,4,6]=4
+matrixdatabase[0,4,5]=3
+matrixdatabase[0,3,5]=2
 
 # So this program is set up to use 3 actors.
 # the main actor starts at [0,0,0], it's linked counterpart starts at [1,0,0]
@@ -270,8 +306,8 @@ d.variables=32
 actorlist=[a,b,c,d]
 
 pygame.freetype.init()
-default=pygame.freetype.SysFont("Segoe UI",20)
-
+default=pygame.freetype.SysFont("Segoe UI",int(canvasheight/((matrixshape[2])*layercount+2))-4)
+viewmode="text"
 
 
 up_pressed=0
