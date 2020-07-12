@@ -8,6 +8,7 @@ Q&E switch tile
 W: set tile
 Space: pause/Unpause
 arrow keys: control cursor.
+number keys: change viewing mode. 
 
 
 
