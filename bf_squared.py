@@ -191,9 +191,11 @@ def draw():
             for y in range(matrixshape[2]):
                 squarepos=(x*sq+sq,(canvasheight-y*sq-2*sq)-z*sq*matrixshape[2]-z*sq)
                 pygame.draw.rect(window,color_palette(matrixdatabase[z,x,y]),(squarepos[0],squarepos[1],sq,sq))
-                if viewmode=="text":
-                    default.render_to(window,(squarepos),tilesymbol[matrixdatabase[z,x,y]%len(program)])
 
+                if viewmode==1:
+                    default.render_to(window,(squarepos),tilesymbol[matrixdatabase[z,x,y]%len(program)])
+                if viewmode==2:
+                    default.render_to(window,(squarepos),chr(matrixdatabase[z,x,y]+32))
                 
 
                     
@@ -307,7 +309,7 @@ actorlist=[a,b,c,d]
 
 pygame.freetype.init()
 default=pygame.freetype.SysFont("Segoe UI",int(canvasheight/((matrixshape[2])*layercount+2))-4)
-viewmode="text"
+viewmode=0
 
 
 up_pressed=0
@@ -367,7 +369,16 @@ while True:
     if key[pygame.K_w] and w_pressed<=0:
         matrixdatabase[cursorpos[0],cursorpos[1],cursorpos[2]]=cursortile
         w_pressed=1
-        
+
+    if key[pygame.K_0]:
+        viewmode=0
+    if key[pygame.K_1]:
+        viewmode=1
+    if key[pygame.K_2]:
+        viewmode=2
+
+
+    
     space_pressed-=0.3
     right_pressed-=0.3
     up_pressed-=0.3
