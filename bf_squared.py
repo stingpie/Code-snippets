@@ -1,12 +1,13 @@
 
 
 import time
+import os
 import pygame
 from pygame import freetype
 import numpy
 
 
-matrixshape=(1,10,10) #z,x,y
+matrixshape=[1,10,10] #z,x,y
 matrixdatabase=numpy.zeros(matrixshape,dtype=int)
 layercount=2 #z amount (use this if you want 3d)
 
@@ -264,10 +265,15 @@ e_pressed=0
 q_pressed=0
 w_pressed=0
 r_pressed=0
+o_pressed=0
 
 possiblelink=0
 playing=False
 actorplace=False
+
+
+if not os.path.isdir("./bf-2_saves/"):
+    os.mkdir("./bf-2_saves/")
 
 while True:
     ## Input handling
@@ -319,7 +325,7 @@ while True:
         if not actorplace:
             matrixdatabase[cursorpos[0],cursorpos[1],cursorpos[2]]=cursortile
         else:
-            actorlist=numpy.append(actorlist,actor([cursorpos[0],cursorpos[1],cursorpos[2]],[0,0],True))
+            actorlist=numpy.append(actorlist,actor([cursorpos[0],cursorpos[1],cursorpos[2]],[0,0],True)[:])
             actorlist[-1:][0].linked=[possiblelink]
 
         w_pressed=1
@@ -327,7 +333,24 @@ while True:
         actorplace=not actorplace
         r_pressed=1
 
+    if key[pygame.K_o] and o_pressed<=0:
+        filecount=0
+        for path in os.listdir("./bf-2_saves/"):
+            if os.path.isfile(os.path.join("./bf-2_saves/", path)):
+                filecount += 1
+        numpy.save("./bf-2_saves/program_tiles"+str(int(filecount/2)+1),matrixdatabase)
+        numpy.save("./bf-2_saves/program_actors"+str(int(filecount/2)+1),actorlist)
+        o_pressed=1
         
+    if key[pygame.K_p]:
+        filecount=0
+        for path in os.listdir("./bf-2_saves/"):
+            if os.path.isfile(os.path.join("./bf-2_saves/", path)):
+                filecount += 1
+        matrixdatabase=numpy.load("./bf-2_saves/program_tiles"+str(int(filecount/2))+".npy")[:]
+        matrixshape=matrixdatabase.shape
+        actorlist=numpy.load("./bf-2_saves/program_actors"+str(int(filecount/2))+".npy")[:]
+
 
     if key[pygame.K_0]:
         viewmode=0
@@ -349,6 +372,7 @@ while True:
     q_pressed-=0.3
     w_pressed-=0.3
     r_pressed-=0.3
+    o_pressed-=0.05
     #done with input handling
 
     
@@ -359,4 +383,5 @@ while True:
         for i in range(len(actorlist)):
             actorlist[i].run()
     ##        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
-    ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables)
+    ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
+    ##        print("-=-")
