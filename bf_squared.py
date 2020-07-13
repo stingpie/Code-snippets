@@ -155,9 +155,10 @@ class actor(object):
                 # if the tile has a value larger than the length of "program"
                 # Assume it's trying to give an order to it's linked partners.
                 # len(program) * which_linked_partner + tile_order
-                linked_actor=int(tile/len(program))-1
-                linked_order=tile%len(program)
-                actorlist[self.linked[linked_actor]].orders=linked_order
+                if self.linked[0]>=0:
+                    linked_actor=int(tile/len(program))-1
+                    linked_order=tile%len(program)
+                    actorlist[self.linked[linked_actor]].orders=linked_order
 ##                print(program[linked_order])
 ##                print()
                             
@@ -196,6 +197,8 @@ def draw():
                     default.render_to(window,(squarepos),tilesymbol[matrixdatabase[z,x,y]%len(program)])
                 if viewmode==2:
                     default.render_to(window,(squarepos),chr(matrixdatabase[z,x,y]+32))
+                if viewmode==3:
+                    default.render_to(window,(squarepos),str(matrixdatabase[z,x,y]))
                 
 
                     
@@ -209,18 +212,21 @@ def draw():
             pygame.draw.circle(window,(color_palette(actorlist[i].variables)),(actorpos1,actorpos2),int(radius/2))
         elif len(actorlist[i].variables)>0:
             pygame.draw.circle(window,(color_palette(actorlist[i].variables[0])),(actorpos1,actorpos2),int(radius/2))
-
+    
     cursorscreenpos=[0,0]
     cursorscreenpos[0]=cursorpos[1]*sq+sq
     cursorscreenpos[1]=(canvasheight-cursorpos[2]*sq-2*sq)-cursorpos[0]*sq*matrixshape[2] -cursorpos[0]*sq
     pygame.draw.rect(window,(255,255,254),(cursorscreenpos[0],cursorscreenpos[1],sq,sq),1)
 
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)),str(int(cursortile/len(program)))+"x "+tilenames[cursortile%len(program)],fgcolor=(255,255,255))
-
-
-
-    
-
+    if actorplace:
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"actor placer",fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+2*fontsize),"linked actor index: "+str(possiblelink),fgcolor=(255,255,255))    
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)),"controls:",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize),"arrow keys: move cursor",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*2),"q&e: increment / decrement",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*3),"w: place",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*4),"r: actor mode",fgcolor=(255,255,255))
     
     pygame.display.update()
     pygame.event.pump()
@@ -232,63 +238,6 @@ window= pygame.display.set_mode((canvaswidth, canvasheight) )
 
 
 
-
-# This makes a fun path.
-# tile zero does nothing,
-# tiles 1-4 changes the direction of the actor
-# tile 5 sets the direction to [0,0]
-# tiles 6-9 set direction to zero, but still shifts the actor. 
-# tile 10 is the "if equal" tile
-# tile eleven gets the actor to read what tile the actor is standing on
-# tile twelve accumulates the data from it's linked partners
-
-matrixdatabase[0,0,0]=1
-matrixdatabase[0,1,0]=22
-matrixdatabase[0,3,0]=32
-matrixdatabase[1,2,0]=12
-matrixdatabase[0,4,0]=12
-matrixdatabase[0,5,0]=10
-#setting up a loop:
-matrixdatabase[0,6,2]=27
-matrixdatabase[0,7,2]=2
-matrixdatabase[0,7,3]=3
-matrixdatabase[0,2,3]=2
-matrixdatabase[0,2,7]=3
-matrixdatabase[0,0,7]=4
-matrixdatabase[0,0,3]=1
-matrixdatabase[0,2,4]=34
-matrixdatabase[0,2,5]=32
-matrixdatabase[0,2,6]=12
-# NOTE: there is currently a bug where the IF tile is making the actor move
-# weirdly. I don't really know what's causing it.
-# otherwise, the program should stick actor 0 into a loop, and it should
-# iterate 32 times. 
-matrixdatabase[0,1,3]=10
-matrixdatabase[0,3,1]=2
-matrixdatabase[0,3,6]=1
-matrixdatabase[0,4,6]=4
-matrixdatabase[0,4,5]=3
-matrixdatabase[0,3,5]=2
-
-# So this program is set up to use 3 actors.
-# the main actor starts at [0,0,0], it's linked counterpart starts at [1,0,0]
-# the last actor is at [0,5,1] to act as an argument later.
-#
-# The program starts with [0,0,0] and tile 1, telling actor 0 to move to the
-# right.
-# Then, at [0,1,0], there is tile 23, telling the actor to command it's
-# linked counterpart to move right as well.
-# Then, as actor 1 (actor 0's counterpart) walks over tile 12, actor 0 goes
-# over tile 32, which tell's it's counterpart to read it's tile. Thus,
-# actor 1 stores tile 12 as it's variable.
-# Then, actor 0 walks over tile twelve, which tells it to take the variable
-# from it's counterpart.
-# After that, actor 0 walks onto [0,5,0]. which is tile 10, an "if statement"
-# Just below that tile, resides actor 2, who has the variable 12 stored.
-# because of the if tile, actor 0 "hops" over actor 2.
-
-
-
 ##  MAIN LOOP
 ##
 ##
@@ -297,18 +246,12 @@ matrixdatabase[0,3,5]=2
 
 
 #setting up all the actors
-a=actor([0,0,0],[0,0],True)
-a.linked=[1]
-b=actor([1,0,0],[0,0],False)
 
-c=actor([0,5,1],[0,0],False)
-c.variables=12
-d=actor([0,1,2],[0,0],False)
-d.variables=32
-actorlist=[a,b,c,d]
+actorlist=[]
 
 pygame.freetype.init()
-default=pygame.freetype.SysFont("Segoe UI",int(canvasheight/((matrixshape[2])*layercount+2))-4)
+fontsize=int(canvasheight/((matrixshape[2])*layercount+2))-4
+default=pygame.freetype.SysFont("Segoe UI",fontsize)
 viewmode=0
 
 
@@ -320,7 +263,11 @@ space_pressed=0
 e_pressed=0
 q_pressed=0
 w_pressed=0
+r_pressed=0
+
+possiblelink=0
 playing=False
+actorplace=False
 
 while True:
     ## Input handling
@@ -350,10 +297,10 @@ while True:
         if cursorpos[0]!=0 or cursorpos[2]!=0:
             if cursorpos[0]-1>=0 and cursorpos[2]==0:
                 cursorpos[0]-=1
-                cursorpos[2]=matrixshape[2]
+                cursorpos[2]=matrixshape[2]-1
             else:
                 cursorpos[2]-=1
-        down_pressed=0
+        down_pressed=1
 
     if key[pygame.K_SPACE] and space_pressed<=0:
         playing= not playing
@@ -361,14 +308,26 @@ while True:
 
     if key[pygame.K_q] and q_pressed<=0:
         cursortile-=1
+        possiblelink-=1
         q_pressed=1
         
     if key[pygame.K_e] and e_pressed<=0:
         cursortile+=1
+        possiblelink+=1
         e_pressed=1
     if key[pygame.K_w] and w_pressed<=0:
-        matrixdatabase[cursorpos[0],cursorpos[1],cursorpos[2]]=cursortile
+        if not actorplace:
+            matrixdatabase[cursorpos[0],cursorpos[1],cursorpos[2]]=cursortile
+        else:
+            actorlist=numpy.append(actorlist,actor([cursorpos[0],cursorpos[1],cursorpos[2]],[0,0],True))
+            actorlist[-1:][0].linked=[possiblelink]
+
         w_pressed=1
+    if key[pygame.K_r] and r_pressed<=0:
+        actorplace=not actorplace
+        r_pressed=1
+
+        
 
     if key[pygame.K_0]:
         viewmode=0
@@ -376,8 +335,10 @@ while True:
         viewmode=1
     if key[pygame.K_2]:
         viewmode=2
-
-
+    if key[pygame.K_3]:
+        viewmode=3
+    if cursorpos[0]<0 or cursorpos[0]>layercount-1 or cursorpos[1]<0 or cursorpos[1]>=matrixshape[1] or cursorpos[2]<0 or cursorpos[2]>=matrixshape[2]:
+        cursorpos=[0,0,0]
     
     space_pressed-=0.3
     right_pressed-=0.3
@@ -387,6 +348,7 @@ while True:
     e_pressed-=0.3
     q_pressed-=0.3
     w_pressed-=0.3
+    r_pressed-=0.3
     #done with input handling
 
     
@@ -397,5 +359,4 @@ while True:
         for i in range(len(actorlist)):
             actorlist[i].run()
     ##        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
-    ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
-    ##        print("-=-")
+    ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables)
