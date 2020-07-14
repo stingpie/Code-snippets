@@ -36,7 +36,8 @@ tilenames=["erase",
            "toggle activity",
            "link actor",
            "remove link",
-           "make actor"
+           "make actor",
+           "print"
            ]
 
 tilesymbol=["",
@@ -59,7 +60,8 @@ tilesymbol=["",
             "℮",
             "ꚙ",
             "ꙍ",
-            "Ꙫ"
+            "Ꙫ",
+            "Ᵽ"
             ]
 
 
@@ -96,7 +98,7 @@ program=["",
          "self.linked=numpy.append(self.linked[:self.variables[0]],self.linked[self.variables[0]+1:])", 
          #this creates a new actor using six variables from self.variables[0:5]
          "actorlist=numpy.append(actorlist,actor(self.variables[0:2],self.variables[3:4],bool(self.variables[5])))",
-
+         "print(chr(int(self.variables[0]+32)))"
          ] 
 
 for i in range(layercount-1): #this part appends arrays of matrixshape 
@@ -205,7 +207,7 @@ def draw():
                     
     radius=int(sq/2)
     for i in range(len(actorlist)):
-        
+   
         actorpos1=actorlist[i].pos[1]*sq+sq+radius
         actorpos2=(canvasheight-actorlist[i].pos[2]*sq-2*sq)-actorlist[i].pos[0]*sq*matrixshape[2]+radius -actorlist[i].pos[0]*sq
         pygame.draw.circle(window,(20,20,20),(actorpos1,actorpos2),radius)
@@ -228,7 +230,9 @@ def draw():
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*2),"q&e: increment / decrement",fgcolor=(255,255,255))
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*3),"w: place",fgcolor=(255,255,255))
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*4),"r: actor mode",fgcolor=(255,255,255))
-    
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*5),"O&P: save/load to the file of index ",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*6),"tile selection",fgcolor=(255,255,255))
+
     pygame.display.update()
     pygame.event.pump()
     
@@ -325,7 +329,7 @@ while True:
         if not actorplace:
             matrixdatabase[cursorpos[0],cursorpos[1],cursorpos[2]]=cursortile
         else:
-            actorlist=numpy.append(actorlist,actor([cursorpos[0],cursorpos[1],cursorpos[2]],[0,0],True)[:])
+            actorlist=numpy.append(actorlist,actor([cursorpos[0],cursorpos[1],cursorpos[2]],[0,0],True))
             actorlist[-1:][0].linked=[possiblelink]
 
         w_pressed=1
@@ -338,8 +342,8 @@ while True:
         for path in os.listdir("./bf-2_saves/"):
             if os.path.isfile(os.path.join("./bf-2_saves/", path)):
                 filecount += 1
-        numpy.save("./bf-2_saves/program_tiles"+str(int(filecount/2)+1),matrixdatabase)
-        numpy.save("./bf-2_saves/program_actors"+str(int(filecount/2)+1),actorlist)
+        numpy.save("./bf-2_saves/program_tiles"+str(cursortile),matrixdatabase)
+        numpy.save("./bf-2_saves/program_actors"+str(cursortile),actorlist, allow_pickle=True)
         o_pressed=1
         
     if key[pygame.K_p]:
@@ -347,9 +351,9 @@ while True:
         for path in os.listdir("./bf-2_saves/"):
             if os.path.isfile(os.path.join("./bf-2_saves/", path)):
                 filecount += 1
-        matrixdatabase=numpy.load("./bf-2_saves/program_tiles"+str(int(filecount/2))+".npy")[:]
+        matrixdatabase=numpy.load("./bf-2_saves/program_tiles"+str(cursortile)+".npy")[:]
         matrixshape=matrixdatabase.shape
-        actorlist=numpy.load("./bf-2_saves/program_actors"+str(int(filecount/2))+".npy")[:]
+        actorlist=numpy.load("./bf-2_saves/program_actors"+str(cursortile)+".npy",allow_pickle=True)[:]
 
 
     if key[pygame.K_0]:
