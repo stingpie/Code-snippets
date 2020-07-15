@@ -98,7 +98,7 @@ program=["",
          "self.linked=numpy.append(self.linked[:self.variables[0]],self.linked[self.variables[0]+1:])", 
          #this creates a new actor using six variables from self.variables[0:5]
          "actorlist=numpy.append(actorlist,actor(self.variables[0:2],self.variables[3:4],bool(self.variables[5])))",
-         "print(chr(int(self.variables[0]+32)))"
+         "print(chr(int(self.variables[0]+32)), end=\'\')"
          ] 
 
 for i in range(layercount-1): #this part appends arrays of matrixshape 
@@ -270,9 +270,11 @@ q_pressed=0
 w_pressed=0
 r_pressed=0
 o_pressed=0
+d_pressed=0
 
 possiblelink=0
 playing=False
+step=False
 actorplace=False
 
 
@@ -355,6 +357,11 @@ while True:
         matrixshape=matrixdatabase.shape
         actorlist=numpy.load("./bf-2_saves/program_actors"+str(cursortile)+".npy",allow_pickle=True)[:]
 
+    if (key[pygame.K_d] and d_pressed<=0) or step:
+        step= not step
+        d_pressed=1
+
+
 
     if key[pygame.K_0]:
         viewmode=0
@@ -377,15 +384,17 @@ while True:
     w_pressed-=0.3
     r_pressed-=0.3
     o_pressed-=0.05
+    d_pressed-=0.1
     #done with input handling
 
     
     draw()
     time.sleep(0.03)
 ##    print("iter "+str(i)+":")
-    if playing:
+    if playing or step:
         for i in range(len(actorlist)):
             actorlist[i].run()
     ##        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
-    ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
+    ##        print("Agent "+str(i)+" variables: " +str(actorlist.variables))
     ##        print("-=-")
+
