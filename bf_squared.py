@@ -395,6 +395,5 @@ while True:
         for i in range(len(actorlist)):
             actorlist[i].run()
     ##        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
-    ##        print("Agent "+str(i)+" variables: " +str(actorlist.variables))
+    ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
     ##        print("-=-")
-
