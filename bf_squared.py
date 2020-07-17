@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 
 import time
 import os
@@ -211,6 +211,8 @@ def draw():
         actorpos1=actorlist[i].pos[1]*sq+sq+radius
         actorpos2=(canvasheight-actorlist[i].pos[2]*sq-2*sq)-actorlist[i].pos[0]*sq*matrixshape[2]+radius -actorlist[i].pos[0]*sq
         pygame.draw.circle(window,(20,20,20),(actorpos1,actorpos2),radius)
+        if guimode=="actor" and i==cursortile:
+            pygame.draw.circle(window,(255,255,255),(actorpos1,actorpos2),radius+2,2)
         if isinstance(actorlist[i].variables,int):
             pygame.draw.circle(window,(color_palette(actorlist[i].variables)),(actorpos1,actorpos2),int(radius/2))
         elif len(actorlist[i].variables)>0:
@@ -220,18 +222,34 @@ def draw():
     cursorscreenpos[0]=cursorpos[1]*sq+sq
     cursorscreenpos[1]=(canvasheight-cursorpos[2]*sq-2*sq)-cursorpos[0]*sq*matrixshape[2] -cursorpos[0]*sq
     pygame.draw.rect(window,(255,255,254),(cursorscreenpos[0],cursorscreenpos[1],sq,sq),1)
+    if guimode=="tile":
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)),str(int(cursortile/len(program)))+"x "+tilenames[cursortile%len(program)],fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"Q&E: change tile",fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize*2),"W: place tile",fgcolor=(255,255,255))
 
-    default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)),str(int(cursortile/len(program)))+"x "+tilenames[cursortile%len(program)],fgcolor=(255,255,255))
-    if actorplace:
+    if  guimode=="actor":
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"actor placer",fgcolor=(255,255,255))
-        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+2*fontsize),"linked actor index: "+str(possiblelink),fgcolor=(255,255,255))    
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+2*fontsize),"linked actor index: "+str(possiblelink),fgcolor=(255,255,255))   
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+3*fontsize),"Q&E: change index",fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+4*fontsize),"W: place actor",fgcolor=(255,255,255))
+
+
+    if guimode=="file":
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"File Slot: "+str(cursortile),fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize*2),"O: Save to slot",fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize*3),"P: load from slot",fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize*4),"Q&E: change slot",fgcolor=(255,255,255))
+
+    
+    
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)),"controls:",fgcolor=(255,255,255))
-    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize),"arrow keys: move cursor",fgcolor=(255,255,255))
-    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*2),"q&e: increment / decrement",fgcolor=(255,255,255))
-    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*3),"w: place",fgcolor=(255,255,255))
-    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*4),"r: actor mode",fgcolor=(255,255,255))
-    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*5),"O&P: save/load to the file of index ",fgcolor=(255,255,255))
-    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*6),"tile selection",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize),"R: Actor Placer",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*2),"I: File manager",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*3),"Arrow keys: move cursor",fgcolor=(255,255,255))
+
+
+
+
 
     pygame.display.update()
     pygame.event.pump()
@@ -271,6 +289,8 @@ w_pressed=0
 r_pressed=0
 o_pressed=0
 d_pressed=0
+i_pressed=0
+guimode="tile"
 
 possiblelink=0
 playing=False
@@ -328,18 +348,21 @@ while True:
         possiblelink+=1
         e_pressed=1
     if key[pygame.K_w] and w_pressed<=0:
-        if not actorplace:
+        if guimode=="tile":
             matrixdatabase[cursorpos[0],cursorpos[1],cursorpos[2]]=cursortile
-        else:
+        elif guimode=="actor":
             actorlist=numpy.append(actorlist,actor([cursorpos[0],cursorpos[1],cursorpos[2]],[0,0],True))
             actorlist[-1:][0].linked=[possiblelink]
 
         w_pressed=1
     if key[pygame.K_r] and r_pressed<=0:
-        actorplace=not actorplace
+        if guimode!="actor":
+            guimode="actor"
+        else:
+            guimode="tile"
         r_pressed=1
 
-    if key[pygame.K_o] and o_pressed<=0:
+    if key[pygame.K_o] and o_pressed<=0 and guimode=="file":
         filecount=0
         for path in os.listdir("./bf-2_saves/"):
             if os.path.isfile(os.path.join("./bf-2_saves/", path)):
@@ -348,7 +371,7 @@ while True:
         numpy.save("./bf-2_saves/program_actors"+str(cursortile),actorlist, allow_pickle=True)
         o_pressed=1
         
-    if key[pygame.K_p]:
+    if key[pygame.K_p] and guimode=="file":
         filecount=0
         for path in os.listdir("./bf-2_saves/"):
             if os.path.isfile(os.path.join("./bf-2_saves/", path)):
@@ -360,7 +383,12 @@ while True:
     if (key[pygame.K_d] and d_pressed<=0) or step:
         step= not step
         d_pressed=1
-
+    if key[pygame.K_i] and i_pressed<=0:
+        if guimode!="file":
+            guimode="file"
+        else:
+            guimode="tile"
+        i_pressed=1
 
 
     if key[pygame.K_0]:
@@ -385,6 +413,7 @@ while True:
     r_pressed-=0.3
     o_pressed-=0.05
     d_pressed-=0.1
+    i_pressed-=0.1
     #done with input handling
 
     
