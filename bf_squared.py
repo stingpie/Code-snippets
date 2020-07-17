@@ -38,7 +38,7 @@ tilenames=["erase",
            "remove link",
            "make actor",
            "print",
-           "pause"
+           "exit"
            ]
 
 tilesymbol=["",
@@ -256,6 +256,12 @@ def draw():
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)),str(int(cursortile/len(program)))+"x "+tilenames[cursortile%len(program)],fgcolor=(255,255,255))
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"Q&E: change tile",fgcolor=(255,255,255))
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize*2),"W: place tile",fgcolor=(255,255,255))
+        default.render_to(window,(int(canvaswidth*0.75)-fontsize/2,int(canvasheight/64)+fontsize*8),">",fgcolor=(255,255,255))
+        for i in range(int(canvasheight/fontsize)):
+            if (i+cursortile-8)>=0:
+                default.render_to(window,(int(canvaswidth*0.75),int(canvasheight/64)+fontsize*i),str(int((i+cursortile-8)/len(tilenames)))+"x "+tilenames[(i+cursortile-8)%len(tilenames)],fgcolor=(255,255,255))
+
+
 
     if  guimode=="actor":
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"actor placer",fgcolor=(255,255,255))
@@ -376,6 +382,8 @@ while True:
         cursortile-=1
         possiblelink-=1
         q_pressed=1
+        if cursortile<0:
+            cursortile=0
         
     if key[pygame.K_e] and e_pressed<=0:
         cursortile+=1
