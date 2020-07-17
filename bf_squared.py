@@ -37,7 +37,8 @@ tilenames=["erase",
            "link actor",
            "remove link",
            "make actor",
-           "print"
+           "print",
+           "pause"
            ]
 
 tilesymbol=["",
@@ -61,7 +62,33 @@ tilesymbol=["",
             "ꚙ",
             "ꙍ",
             "Ꙫ",
-            "Ᵽ"
+            "Ᵽ",
+            "♯"
+            ]
+            
+tiletitle=["",
+            "RIGHT",
+            "UP",
+            "LEFT",
+            "DOWN",
+            "STOP",
+            "˃",
+            "˄",
+            "˂",
+            "˅",
+            "=",
+            "GET",
+            "AGG",
+            "+1",
+            "-1",
+            "+V",
+            "-V",
+            "ACT",
+            "LINK",
+            "UNLINK",
+            "MAKE",
+            "PRINT",
+            "EXIT"
             ]
 
 
@@ -98,7 +125,8 @@ program=["",
          "self.linked=numpy.append(self.linked[:self.variables[0]],self.linked[self.variables[0]+1:])", 
          #this creates a new actor using six variables from self.variables[0:5]
          "actorlist=numpy.append(actorlist,actor(self.variables[0:2],self.variables[3:4],bool(self.variables[5])))",
-         "print(chr(int(self.variables[0]+32)), end=\'\')"
+         "print(chr(int(self.variables[0]+32)), end=\'\')",
+         "exit()"
          ] 
 
 for i in range(layercount-1): #this part appends arrays of matrixshape 
@@ -202,7 +230,9 @@ def draw():
                     default.render_to(window,(squarepos),chr(matrixdatabase[z,x,y]+32))
                 if viewmode==3:
                     default.render_to(window,(squarepos),str(matrixdatabase[z,x,y]))
-                
+                if viewmode==4:
+                    codetext.render_to(window,(squarepos),tiletitle[matrixdatabase[z,x,y]%len(program)])
+            
 
                     
     radius=int(sq/2)
@@ -246,6 +276,9 @@ def draw():
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize),"R: Actor Placer",fgcolor=(255,255,255))
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*2),"I: File manager",fgcolor=(255,255,255))
     default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*3),"Arrow keys: move cursor",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*4),"Space: pause/run",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)+fontsize*5),"D: step forward",fgcolor=(255,255,255))
+    default.render_to(window,(int(canvaswidth/2),int(canvasheight/2)-fontsize),"0,1,2,3: change view",fgcolor=(255,255,255))
 
 
 
@@ -274,7 +307,8 @@ actorlist=[]
 
 pygame.freetype.init()
 fontsize=int(canvasheight/((matrixshape[2])*layercount+2))-4
-default=pygame.freetype.SysFont("Segoe UI",fontsize)
+default=pygame.freetype.SysFont("Segoe UI",16)
+codetext=pygame.freetype.SysFont("Segoe UI",int(fontsize*0.5))
 viewmode=0
 
 
@@ -399,6 +433,8 @@ while True:
         viewmode=2
     if key[pygame.K_3]:
         viewmode=3
+    if key[pygame.K_4]:
+        viewmode=4
     if cursorpos[0]<0 or cursorpos[0]>layercount-1 or cursorpos[1]<0 or cursorpos[1]>=matrixshape[1] or cursorpos[2]<0 or cursorpos[2]>=matrixshape[2]:
         cursorpos=[0,0,0]
     
@@ -426,3 +462,12 @@ while True:
     ##        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
     ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
     ##        print("-=-")
+
+
+
+
+
+
+
+
+
