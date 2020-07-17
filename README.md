@@ -11,8 +11,7 @@ arrow keys: control cursor.
 number keys: change viewing mode. 
 O&P: save & load
 
-there is a "hello, world!" example in save file 2.
-to load it, press "R" and then "E" twice. this puts the variable "cursortile" to the value 2, the save file we want to load. Then, press "P" to load the selected save file. 
+there is a "hello, world!" example in save file 1.
 
 
 The whole idea behind this is to make an esoteric language. Inspried by BF https://en.wikipedia.org/wiki/Esoteric_programming_language#Brainfuck and piet https://en.wikipedia.org/wiki/Esoteric_programming_language#Piet , BF² is like bf, with a few upgrades. BF² is sort of 2.5D. In bf², there are multiple layers which different actors reside in. On each layer, there are different tiles which actors can use as a program. 
