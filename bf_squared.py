@@ -253,15 +253,17 @@ def draw():
     cursorscreenpos[1]=(canvasheight-cursorpos[2]*sq-2*sq)-cursorpos[0]*sq*matrixshape[2] -cursorpos[0]*sq
     pygame.draw.rect(window,(255,255,254),(cursorscreenpos[0],cursorscreenpos[1],sq,sq),1)
     if guimode=="tile":
+
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)),str(int(cursortile/len(program)))+"x "+tilenames[cursortile%len(program)],fgcolor=(255,255,255))
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"Q&E: change tile",fgcolor=(255,255,255))
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize*2),"W: place tile",fgcolor=(255,255,255))
         default.render_to(window,(int(canvaswidth*0.75)-fontsize/2,int(canvasheight/64)+fontsize*8),">",fgcolor=(255,255,255))
         for i in range(int(canvasheight/fontsize)):
             if (i+cursortile-8)>=0:
-                default.render_to(window,(int(canvaswidth*0.75),int(canvasheight/64)+fontsize*i),str(int((i+cursortile-8)/len(tilenames)))+"x "+tilenames[(i+cursortile-8)%len(tilenames)],fgcolor=(255,255,255))
-
-
+                if viewmode==0 or viewmode==1:
+                    default.render_to(window,(int(canvaswidth*0.75),int(canvasheight/64)+fontsize*i),str(int((i+cursortile-8)/len(tilenames)))+"x "+tilenames[(i+cursortile-8)%len(tilenames)],fgcolor=(255,255,255))
+                elif viewmode==2:
+                    default.render_to(window,(int(canvaswidth*0.75),int(canvasheight/64)+fontsize*i),str(int((i+cursortile-8)/len(tilenames)))+"x "+chr(cursortile+i+24),fgcolor=(255,255,255))
 
     if  guimode=="actor":
         default.render_to(window,(int(canvaswidth/2),int(canvasheight/64)+fontsize),"actor placer",fgcolor=(255,255,255))
@@ -445,8 +447,10 @@ while True:
         viewmode=4
     if cursorpos[0]<0 or cursorpos[0]>layercount-1 or cursorpos[1]<0 or cursorpos[1]>=matrixshape[1] or cursorpos[2]<0 or cursorpos[2]>=matrixshape[2]:
         cursorpos=[0,0,0]
-    
-    space_pressed-=0.3
+    if playing:
+        space_pressed-=0.01
+    else:
+        space_pressed-=0.3
     right_pressed-=0.3
     up_pressed-=0.3
     left_pressed-=0.3
@@ -462,7 +466,7 @@ while True:
 
     
     draw()
-    time.sleep(0.03)
+
 ##    print("iter "+str(i)+":")
     if playing or step:
         for i in range(len(actorlist)):
@@ -470,8 +474,8 @@ while True:
     ##        print("Agent "+str(i)+" Pos: " +str(actorlist[i].pos))
     ##        print("Agent "+str(i)+" variables: " +str(actorlist[i].variables))
     ##        print("-=-")
-
-
+    else:
+        time.sleep(0.03)
 
 
 
